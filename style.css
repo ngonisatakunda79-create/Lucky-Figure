@@ -1,15 +1,50 @@
-:root { --bg:#0b0f16; --card:#101520; --accent:#00ffd5; --muted:#9aa4b2; }
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#fff}
-.container{max-width:900px;margin:24px auto;padding:16px}
-header{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--card);border-radius:8px}
-header h1{margin:0;font-size:20px}
-#top-right{font-size:14px}
-button{background:var(--accent);border:none;color:#000;padding:10px 14px;border-radius:8px;font-weight:600;cursor:pointer;margin-left:8px}
-.small{padding:6px 8px;font-size:13px}
-input{padding:10px;border-radius:8px;border:1px solid #2b3642;background:#071016;color:#fff}
-.controls{margin:16px 0}
-#status{margin-top:10px;color:var(--muted)}
-#numbers button,#guesses button{margin:6px;padding:12px 14px;border-radius:8px;background:#fff;color:#000;border:none;cursor:pointer}
-.hidden{display:none}
-#gameUI{margin-top:12px;padding:12px;background:#07121a;border-radius:8px}
+/* General page style */
+body { 
+  font-family: Arial, sans-serif; 
+  background: #0d0d0d; 
+  color: #fff; 
+  text-align: center; 
+  margin: 0; 
+  padding: 0;
+}
+
+/* Header */
+header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  padding: 15px 20px; 
+  background: #111; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Buttons */
+button { 
+  padding: 12px 25px; 
+  margin: 10px; 
+  background: #0ff; 
+  color: #000; 
+  border: none; 
+  border-radius: 5px; 
+  cursor: pointer; 
+  font-weight: bold;
+  transition: transform 0.1s, background 0.2s;
+}
+
+button:hover { 
+  transform: scale(1.05); 
+  background: #0aa;
+}
+
+/* Game container */
+#game { 
+  margin-top: 50px; 
+}
+
+/* Game messages */
+#gameMsg { 
+  margin-top: 20px; 
+  font-weight: bold; 
+  font-size: 18px; 
+  color: #0ff;
+}
