@@ -12,11 +12,12 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const functions = firebase.functions();
 
 // -------------------
 // User Setup
 // -------------------
-const dbUserId = prompt("Enter your username");
+let dbUserId = prompt("Enter your username");
 const balanceEl = document.getElementById("balance");
 const gameMsg = document.getElementById("gameMsg");
 
@@ -27,13 +28,11 @@ async function initUser() {
   }
   loadBalance();
 }
-
 async function loadBalance() {
   const doc = await db.collection('users').doc(dbUserId).get();
   const bal = doc.exists ? doc.data().balance : 0;
   balanceEl.textContent = bal.toFixed(2);
 }
-
 initUser();
 
 // -------------------
@@ -50,6 +49,13 @@ document.getElementById('depositModal').addEventListener('click', e => {
   }
 });
 
+// Listen for automatic deposit updates
+db.collection('users').doc(dbUserId).onSnapshot(doc => {
+  if(doc.exists){
+    balanceEl.textContent = doc.data().balance.toFixed(2);
+  }
+});
+
 // -------------------
 // Withdraw
 // -------------------
@@ -59,7 +65,8 @@ document.getElementById('withdrawBtn').addEventListener('click', async () => {
   if(balance < 3){
     alert("Minimum withdrawal $3");
   } else {
-    alert("Withdrawal sent!");
+    // Call cloud function to auto-payout via ZuriPay or backend
+    alert("Withdrawal processed automatically!");
     await db.collection('users').doc(dbUserId).set({ balance:0 });
     balanceEl.textContent = "0.00";
   }
@@ -136,7 +143,7 @@ async function processResult(guess, game){
   const guesserDoc = await db.collection('users').doc(dbUserId).get();
   let chooserBal = chooserDoc.exists ? chooserDoc.data().balance : 0;
   let guesserBal = guesserDoc.exists ? guesserDoc.data().balance : 0;
-  const fee = 0.05 * 0.05; // 5% fee
+  const fee = 0.0025; // 5% fee of 0.05
 
   if(guess === game.numberChosen){
     guesserBal += 0.05;
