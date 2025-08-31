@@ -1,3 +1,4 @@
+// ----- Firebase setup -----
 const firebaseConfig = {
   apiKey: "AIzaSyAkPqrjrXqtdDxxBhLgRXjRfPciw7XtAj4",
   authDomain: "novely-4421d.firebaseapp.com",
@@ -8,23 +9,26 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const functions = firebase.functions();
 
-let userId = "user1";
+let userId = "user1"; // Replace with dynamic login if needed
 const balanceEl = document.getElementById("balance");
 const gameMsg = document.getElementById("gameMsg");
 
+// Load balance
 function loadBalance() {
   db.collection("users").doc(userId).get().then(doc => {
-    if(doc.exists) {
+    if(doc.exists){
       balanceEl.textContent = doc.data().balance.toFixed(2);
     } else {
-      db.collection("users").doc(userId).set({balance:0});
+      db.collection("users").doc(userId).set({balance: 0});
       balanceEl.textContent = "0.00";
     }
   });
 }
 loadBalance();
 
+// ----- 10 Cents Game -----
 document.getElementById("playBtn").addEventListener("click", () => {
   db.collection("users").doc(userId).get().then(doc => {
     let bal = doc.data().balance;
@@ -49,31 +53,33 @@ document.getElementById("playBtn").addEventListener("click", () => {
         db.collection("users").doc("admin").set({balance: adminBal + fee});
       });
     }
+
     db.collection("users").doc(userId).set({balance: bal});
     balanceEl.textContent = bal.toFixed(2);
   });
 });
 
-document.getElementById("depositBtn").addEventListener("click", () => {
-  document.getElementById("depositModal").style.display = "flex";
-  document.getElementById("zuriPayFrame").src = "https://zuripay.app/embed?amount=1&user="+userId;
-});
+// ----- Stripe Deposit -----
+const stripe = Stripe("pk_live_2h5XvEBelhVDNOY8m77BBvAAiISsVtX2");
+const createPaymentIntent = functions.httpsCallable('createPaymentIntent');
 
-document.getElementById("depositModal").addEventListener("click", e => {
-  if(e.target === document.getElementById("depositModal")){
-    document.getElementById("depositModal").style.display = "none";
-  }
-});
+document.getElementById("depositBtn").addEventListener("click", async () => {
+  try {
+    const result = await createPaymentIntent({ userId, amount: 1 });
+    const clientSecret = result.data.clientSecret;
 
-document.getElementById("withdrawBtn").addEventListener("click", () => {
-  db.collection("users").doc(userId).get().then(doc => {
-    let bal = doc.data().balance;
-    if(bal < 3){
-      alert("Minimum withdrawal is $3");
+    const { error } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: {} } // Use Stripe Elements in production
+    });
+
+    if(error){
+      alert("Payment failed: " + error.message);
     } else {
-      alert("Withdrawal request sent!");
-      db.collection("users").doc(userId).set({balance:0});
-      balanceEl.textContent = "0.00";
+      alert("Payment successful! Your balance will update automatically.");
+      loadBalance();
     }
-  });
+  } catch(err){
+    console.error(err);
+    alert("Error connecting to payment system.");
+  }
 });
