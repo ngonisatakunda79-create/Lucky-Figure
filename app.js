@@ -1,4 +1,4 @@
-// Firebase keys (unsafe in frontend)
+// Firebase config (unsafe in frontend)
 const firebaseConfig = {
   apiKey: "AIzaSyAkPqrjrXqtdDxxBhLgRXjRfPciw7XtAj4",
   authDomain: "novely-4421d.firebaseapp.com",
@@ -12,6 +12,7 @@ const dbUserId = prompt("Enter your username"); // unique per player
 const balanceEl = document.getElementById("balance");
 const gameMsg = document.getElementById("gameMsg");
 
+// Load Firebase scripts
 const script1 = document.createElement('script');
 script1.src = "https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js";
 document.head.appendChild(script1);
@@ -23,7 +24,6 @@ script2.onload = () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Ensure user exists
   async function initUser() {
     const doc = await db.collection('users').doc(dbUserId).get();
     if(!doc.exists){
@@ -40,9 +40,16 @@ script2.onload = () => {
 
   initUser();
 
-  // Deposit
+  // Deposit via ZuriPay
   document.getElementById('depositBtn').addEventListener('click', () => {
-    alert("Deposit via ZuriPay or other method here");
+    document.getElementById('depositModal').style.display = "flex";
+    document.getElementById('zuriPayFrame').src = "https://zuripay.app/embed?amount=1&user=" + dbUserId;
+  });
+
+  document.getElementById('depositModal').addEventListener('click', e => {
+    if(e.target === document.getElementById('depositModal')){
+      document.getElementById('depositModal').style.display = "none";
+    }
   });
 
   // Withdraw
@@ -58,7 +65,7 @@ script2.onload = () => {
     }
   });
 
-  // Multiplayer 10 cents game
+  // Multiplayer 10 cents
   document.getElementById('playBtn').addEventListener('click', async () => {
     const userDoc = await db.collection('users').doc(dbUserId).get();
     let balance = userDoc.exists ? userDoc.data().balance : 0;
@@ -71,7 +78,6 @@ script2.onload = () => {
     const queueDoc = await queueRef.get();
 
     if(!queueDoc.exists || !queueDoc.data().user){
-      // No one waiting → add self to queue
       await queueRef.set({ user: dbUserId });
       gameMsg.textContent = "Waiting for another player...";
       queueRef.onSnapshot(async snap => {
@@ -85,7 +91,6 @@ script2.onload = () => {
       return;
     }
 
-    // Someone is waiting → match with them
     const opponent = queueDoc.data().user;
     if(opponent === dbUserId){
       gameMsg.textContent = "Waiting for another player...";
@@ -112,18 +117,16 @@ script2.onload = () => {
     gameMsg.textContent = "You have 5 seconds to guess the number!";
     let guess = null;
 
-    // Timer for 5 seconds
     const timer = setTimeout(async () => {
       if(guess === null){
-        guess = 0; // invalid guess counts as wrong
+        guess = 0;
         await processResult(guess, game);
       }
     }, 5000);
 
-    // Prompt for guess
     guess = parseInt(prompt("Guess the number 1-4 (5 seconds)"));
     clearTimeout(timer);
-    if(guess === null || isNaN(guess)) guess = 0; // treat cancel as wrong
+    if(guess === null || isNaN(guess)) guess = 0;
     await processResult(guess, game);
   }
 
@@ -133,7 +136,7 @@ script2.onload = () => {
     const guesserDoc = await db.collection('users').doc(dbUserId).get();
     let chooserBal = chooserDoc.exists ? chooserDoc.data().balance : 0;
     let guesserBal = guesserDoc.exists ? guesserDoc.data().balance : 0;
-    const fee = 0.05 * 0.05;
+    const fee = 0.05 * 0.05; // 5% fee
 
     if(guess === game.numberChosen){
       guesserBal += 0.05;
@@ -149,7 +152,18 @@ script2.onload = () => {
     await db.collection('users').doc(chooserId).set({ balance: chooserBal });
     balanceEl.textContent = guesserBal.toFixed(2);
 
-    // Clear game
     await db.collection('queue').doc('waiting').set({ user: null });
   }
-};
+
+  // Admin payout CSV
+  document.getElementById('processPayout').addEventListener('click', () => {
+    const fileInput = document.getElementById('payoutFile');
+    const file = fileInput.files[0];
+    if(!file){
+      alert("Please select a payout CSV file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
