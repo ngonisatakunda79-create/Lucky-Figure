@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Multiplayer 10 Cents Game</title>
+<title>10 Cents Multiplayer Game</title>
 <link rel="stylesheet" href="style.css">
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -23,13 +27,6 @@
 
 <div id="depositModal">
   <iframe id="zuriPayFrame"></iframe>
-</div>
-
-<div>
-  <h3>Admin Payout Upload</h3>
-  <input type="file" id="payoutFile" accept=".csv">
-  <button id="processPayout">Process Payouts</button>
-  <p id="payoutMsg"></p>
 </div>
 
 <script src="app.js"></script>
