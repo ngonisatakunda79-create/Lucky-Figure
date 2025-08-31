@@ -1,1 +1,32 @@
-j
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Takunda Ngonisa Game App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div>Takunda Ngonisa</div>
+  <div>Balance: $<span id="balance">0.00</span></div>
+</header>
+
+<div id="game">
+  <h2>10 Cents Game</h2>
+  <button id="playBtn">Play 10 Cents</button>
+  <button id="depositBtn">Deposit $1</button>
+  <button id="withdrawBtn">Withdraw</button>
+  <p id="gameMsg"></p>
+</div>
+
+<div id="depositModal">
+  <iframe id="zuriPayFrame"></iframe>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
